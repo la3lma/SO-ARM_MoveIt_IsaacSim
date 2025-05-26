@@ -5,6 +5,12 @@ RUN apt-get update && apt-get install -y \
     python3-rosdep \
     python3-colcon-common-extensions \
     ros-humble-moveit \
+    ros-humble-controller-manager \
+    ros-humble-joint-state-publisher \
+    ros-humble-joint-state-publisher-gui \
+    ros-humble-robot-state-publisher \
+    ros-humble-xacro \
+    ros-humble-rviz2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy only source code
