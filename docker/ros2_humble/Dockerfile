@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 ARG USERNAME=ros2-humble
 ARG USER_UID=1000
-ARG USER_GID=$
+ARG USER_GID=1000
 
 RUN groupadd -g $USER_GID $USERNAME \
     && useradd -u $USER_UID -g $USER_GID -m $USERNAME \
