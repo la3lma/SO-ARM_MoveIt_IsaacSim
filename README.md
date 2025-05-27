@@ -20,8 +20,12 @@ This project provides MoveIt configuration and URDF description for the SO-ARM r
 ```
 so-arm_moveit_isaacsim/
 ├── src/
-│   ├── so_arm_urdf/              # Robot URDF description
-│   └── so_arm_moveit_config/     # MoveIt configuration
+│   ├── so_arm_description/         # URDF/Xacro, meshes, RViz
+│   ├── so_arm_moveit_config/       # MoveIt setup assistant output
+│   ├── so_arm_bringup/            # Launch files (ROS 2 Control + MoveIt)
+│   ├── so_arm_controllers/        # YAML controllers + controller manager node
+│   └── so_arm_hardware_interface/ # Custom hardware interface (optional)
+
 ├── Dockerfile                    # Full Docker setup
 ├── Dockerfile.minimal           # Minimal Docker setup
 ├── build.log                    # Build logs
@@ -85,8 +89,12 @@ ros2 launch so_arm_moveit_config demo.launch.py
 
 ### Available Packages
 
-- **so_arm_urdf**: Robot description package with URDF files
+- **so_arm_description**: Robot description package with URDF/Xacro files, meshes, and RViz configurations
 - **so_arm_moveit_config**: MoveIt configuration with planning scenes, controllers, and launch files
+- **so_arm_bringup**: Launch files for ROS 2 Control and MoveIt integration
+- **so_arm_controllers**: Controller configurations and optional controller manager node
+- **so_arm_hardware_interface**: Custom hardware interface implementation (optional)
+- **so_arm_moveit_plugin**: Custom MoveIt plugins and extensions
 
 ## Docker Images
 
