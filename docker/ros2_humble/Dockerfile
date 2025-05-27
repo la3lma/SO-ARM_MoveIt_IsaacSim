@@ -113,6 +113,7 @@ RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
   ros-humble-urdf-tutorial \
   ros-humble-ament-* \
   ros-humble-tf-transformations \
+  ros-humble-moveit-configs-utils \
   vim \
   && sudo rm -rf /var/lib/apt/lists/*
 
