@@ -114,6 +114,7 @@ RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
   ros-humble-ament-* \
   ros-humble-tf-transformations \
   ros-humble-moveit-configs-utils \
+  ros-humble-moveit-ros-visualization \
   vim \
   && sudo rm -rf /var/lib/apt/lists/*
 
@@ -142,11 +143,6 @@ ENV AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS=1
 ###########################################
 FROM dev AS full
 
-RUN cd ~
-RUN sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-RUN sudo unzip awscliv2.zip
-RUN sudo ./aws/install
-RUN sudo rm awscliv2.zip
 
 ENV DEBIAN_FRONTEND=noninteractive
 # Install the full release
