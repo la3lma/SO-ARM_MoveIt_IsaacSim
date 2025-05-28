@@ -115,6 +115,10 @@ RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
   ros-humble-tf-transformations \
   ros-humble-moveit-configs-utils \
   ros-humble-moveit-ros-visualization \
+  ros-humble-controller-manager \
+  ros-humble-joint-state-publisher \
+  ros-humble-joint-state-publisher-gui \
+  ros-humble-robot-state-publisher \
   vim \
   && sudo rm -rf /var/lib/apt/lists/*
 
