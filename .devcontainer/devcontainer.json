@@ -1,0 +1,49 @@
+{
+    "name": "ROS2 humble Dev Container",
+    "build": {
+        "dockerfile": "../docker/ros2_humble/Dockerfile",
+        "context": "..",
+        "args": {
+            "USERNAME": "ros2-humble",
+            "USER_UID": "1000",
+            "USER_GID": "1000"
+        }
+    },
+    "containerEnv": {
+        "DISPLAY": "${localEnv:DISPLAY}",
+        "XAUTHORITY": "/tmp/.docker.xauth",
+        "QT_GRAPHICSSYSTEM": "native"
+    },
+    "remoteUser": "ros2-humble",
+    "mounts": [
+      "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+      "source=${localEnv:HOME}/.gitconfig,target=/home/ros2-humble/.gitconfig,type=bind,consistency=cached",
+      "source=${localEnv:HOME}/.ssh,target=/home/ros2-humble/.ssh,type=bind,consistency=cached"
+    ],
+    "initializeCommand": "touch /tmp/.docker.xauth && xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f /tmp/.docker.xauth nmerge -",
+    "runArgs": [
+      "--network=host",
+      "--privileged",
+      "-v", "/tmp/.docker.xauth:/tmp/.docker.xauth:rw",
+      "-v", "/dev/input:/dev/input",
+      "-v", "/etc/localtime:/etc/localtime:ro",
+      "--user", "${localEnv:USER_UID}:${localEnv:USER_GID}"
+    ],
+    "containerUser": "root",
+    "settings": {
+      "terminal.integrated.defaultProfile.linux": "bash"
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "cheshirekow.cmake-format",
+          "editorconfig.editorconfig",
+          "ms-vscode.cpptools-themes",
+          "ms-vscode.cmake-tools",
+          "ms-vscode.cpptools",
+          "ms-python.python",
+          "njpwerner.autodocstring"
+        ]
+      }
+    }
+}
