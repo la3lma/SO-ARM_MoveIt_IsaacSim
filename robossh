@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# robossh - Quick SSH access to the SO-ARM ROS2 container with X11 forwarding
+
+CONTAINER_NAME="so-arm-moveit"
+SSH_HOST="127.0.0.1"
+SSH_PORT="2224"
+SSH_USER="dev"
+
+# Check if container is running
+if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    echo "Error: Container '${CONTAINER_NAME}' is not running" >&2
+    echo "Start it with: make up  or  docker compose up -d" >&2
+    exit 1
+fi
+
+# Default flags: -X for X11 forwarding
+DEFAULT_FLAGS="-X"
+
+# Execute SSH with default flags and any additional arguments
+# SSH syntax: ssh [options] [user@]hostname [command]
+exec ssh ${DEFAULT_FLAGS} -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "$@"
