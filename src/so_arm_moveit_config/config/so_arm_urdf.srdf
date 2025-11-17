@@ -51,4 +51,8 @@
     <disable_collisions link1="Lower_Arm" link2="Upper_Arm" reason="Adjacent"/>
     <disable_collisions link1="Lower_Arm" link2="Wrist_Pitch_Roll" reason="Adjacent"/>
     <disable_collisions link1="Rotation_Pitch" link2="Upper_Arm" reason="Adjacent"/>
+    <disable_collisions link1="Moving_Jaw" link2="Rotation_Pitch" reason="Never"/>
+    <disable_collisions link1="Moving_Jaw" link2="Base" reason="Never"/>
+    <disable_collisions link1="Fixed_Jaw" link2="Rotation_Pitch" reason="Never"/>
+    <disable_collisions link1="Fixed_Jaw" link2="Base" reason="Never"/>
 </robot>
