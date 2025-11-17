@@ -1,11 +1,11 @@
-# Running MoveIt with Gazebo
+# Running MoveIt with Gazebo (ROS2 Jazzy + Gazebo Harmonic)
 
-Due to clock synchronization complexity with the combined launch file, launch them separately:
+Launch Gazebo and MoveIt separately for best results:
 
 ## Terminal 1: Launch Gazebo
 ```bash
 cd /workspace
-source /opt/ros/humble/setup.bash
+source /opt/ros/jazzy/setup.bash
 source install/setup.bash
 ros2 launch so_arm_urdf gz_sim.launch.py
 ```
@@ -15,12 +15,12 @@ Wait for Gazebo to fully start and the robot to appear (~10 seconds).
 ## Terminal 2: Launch MoveIt + RViz
 ```bash
 cd /workspace
-source /opt/ros/humble/setup.bash
+source /opt/ros/jazzy/setup.bash
 source install/setup.bash
 ROS_USE_SIM_TIME=1 ros2 launch so_arm_moveit_config demo.launch.py
 ```
 
-The `ROS_USE_SIM_TIME=1` environment variable tells ROS2 nodes to use simulation time from Gazebo's `/clock` topic.
+The `ROS_USE_SIM_TIME=1` environment variable tells ROS2 nodes to use simulation time from Gazebo's `/clock` topic. ROS2 Jazzy has much better clock synchronization handling than Humble.
 
 ## Usage in RViz
 
@@ -32,26 +32,11 @@ The robot should plan and execute the motion in both RViz and Gazebo!
 
 ## Notes
 
-- The combined `gazebo_moveit.launch.py` has clock synchronization issues with the MoveIt utility functions
-- Launching separately with `ROS_USE_SIM_TIME=1` is the most reliable approach
+- ROS2 Jazzy + Gazebo Harmonic have much better clock synchronization than Humble + Garden
+- Launching separately with `ROS_USE_SIM_TIME=1` is recommended
 - Make sure Gazebo is fully started before launching MoveIt
 
 ## Troubleshooting
-
-### Clock Synchronization Error
-
-If you see this error:
-```
-[move_group]: Didn't receive robot state (joint angles) with recent timestamp within 1.000000 seconds.
-Requested time 1763411687.991599, but latest received state has time 3341.742000.
-```
-
-This means move_group is using wall clock time (~1.7 billion seconds) while joint states use simulation time (~3341 seconds).
-
-**Solution**: Ensure you're using `ROS_USE_SIM_TIME=1` when launching MoveIt:
-```bash
-ROS_USE_SIM_TIME=1 ros2 launch so_arm_moveit_config demo.launch.py
-```
 
 ### Joint State Broadcaster Error
 

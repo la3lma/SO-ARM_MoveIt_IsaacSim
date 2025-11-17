@@ -17,7 +17,7 @@ services:
     environment:
       - DISPLAY=:1
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - ROS_DISTRO=humble
+      - ROS_DISTRO=jazzy
       - VNC_GEOMETRY=${VNC_GEOMETRY:-1920x1080}
       - VNC_DEPTH=${VNC_DEPTH:-24}
       - TZ=${TZ:-UTC}
@@ -39,13 +39,13 @@ services:
       - ros2-moveit
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - ROS_DISTRO=humble
+      - ROS_DISTRO=jazzy
     volumes:
       - .:/workspace:rw
     working_dir: /workspace
     command: >
       bash -c "
-        source /opt/ros/humble/setup.bash;
+        source /opt/ros/jazzy/setup.bash;
         [ -f install/setup.bash ] && source install/setup.bash;
         ros2 launch so_arm_moveit_config rsp.launch.py
       "
@@ -64,13 +64,13 @@ services:
       - robot-state-publisher
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - ROS_DISTRO=humble
+      - ROS_DISTRO=jazzy
     volumes:
       - .:/workspace:rw
     working_dir: /workspace
     command: >
       bash -c "
-        source /opt/ros/humble/setup.bash;
+        source /opt/ros/jazzy/setup.bash;
         [ -f install/setup.bash ] && source install/setup.bash;
         ros2 launch so_arm_moveit_config move_group.launch.py
       "
@@ -90,7 +90,7 @@ services:
     environment:
       - DISPLAY=${DISPLAY:-:0}
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - ROS_DISTRO=humble
+      - ROS_DISTRO=jazzy
       - QT_X11_NO_MITSHM=1
       - LIBGL_ALWAYS_INDIRECT=0
     volumes:
@@ -99,7 +99,7 @@ services:
     working_dir: /workspace
     command: >
       bash -c "
-        source /opt/ros/humble/setup.bash;
+        source /opt/ros/jazzy/setup.bash;
         [ -f install/setup.bash ] && source install/setup.bash;
         ros2 launch so_arm_moveit_config moveit_rviz.launch.py
       "
@@ -135,13 +135,13 @@ services:
       - mongodb
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - ROS_DISTRO=humble
+      - ROS_DISTRO=jazzy
     volumes:
       - .:/workspace:rw
     working_dir: /workspace
     command: >
       bash -c "
-        source /opt/ros/humble/setup.bash;
+        source /opt/ros/jazzy/setup.bash;
         [ -f install/setup.bash ] && source install/setup.bash;
         ros2 launch so_arm_moveit_config warehouse_db.launch.py
       "
@@ -164,7 +164,7 @@ services:
     environment:
       - DISPLAY=${DISPLAY:-:0}
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - ROS_DISTRO=humble
+      - ROS_DISTRO=jazzy
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1

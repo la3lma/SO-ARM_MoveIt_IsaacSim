@@ -1,7 +1,8 @@
-FROM ros:humble
+FROM ros:jazzy
 
 # --- Unminimize Ubuntu (restore man pages, docs, etc.) ---
-RUN yes | unminimize || true
+# Skip unminimize to avoid potential issues - not critical for container use
+# RUN yes | unminimize || true
 
 # Add Gazebo repository
 RUN apt-get update && apt-get install -y wget gnupg lsb-release \
@@ -12,27 +13,27 @@ RUN apt-get update && apt-get install -y wget gnupg lsb-release \
 RUN apt-get update && apt-get install -y \
     python3-rosdep \
     python3-colcon-common-extensions \
-    ros-humble-desktop \
-    ros-humble-moveit \
-    ros-humble-controller-manager \
-    ros-humble-joint-state-publisher \
-    ros-humble-joint-state-publisher-gui \
-    ros-humble-robot-state-publisher \
-    ros-humble-xacro \
-    ros-humble-rviz2 \
-    ros-humble-rviz-default-plugins \
-    ros-humble-ros-gz \
-    ros-humble-ros-gz-sim \
-    ros-humble-ros-gz-bridge \
-    ros-humble-gz-ros2-control \
-    ros-humble-ros2-control \
-    ros-humble-ros2-controllers \
-    ros-humble-joint-trajectory-controller \
-    ros-humble-position-controllers \
-    gz-garden \
+    ros-jazzy-desktop \
+    ros-jazzy-moveit \
+    ros-jazzy-controller-manager \
+    ros-jazzy-joint-state-publisher \
+    ros-jazzy-joint-state-publisher-gui \
+    ros-jazzy-robot-state-publisher \
+    ros-jazzy-xacro \
+    ros-jazzy-rviz2 \
+    ros-jazzy-rviz-default-plugins \
+    ros-jazzy-ros-gz \
+    ros-jazzy-ros-gz-sim \
+    ros-jazzy-ros-gz-bridge \
+    ros-jazzy-gz-ros2-control \
+    ros-jazzy-ros2-control \
+    ros-jazzy-ros2-controllers \
+    ros-jazzy-joint-trajectory-controller \
+    ros-jazzy-position-controllers \
+    gz-harmonic \
     mesa-utils libgl1 libgl1-mesa-dev libglu1-mesa-dev \
     libxkbcommon-x11-0 libxrandr2 libxi6 libxrender1 libxss1 \
-    libxtst6 libxcomposite1 libasound2 \
+    libxtst6 libxcomposite1 libasound2t64 \
     novnc websockify tigervnc-standalone-server \
     xfce4 xfce4-terminal terminator dbus-x11 \
     sudo wget gpg ca-certificates \
@@ -75,12 +76,12 @@ COPY src /workspace/src
 
 WORKDIR /workspace
 
-# Install ROS dependencies (skip warehouse_ros_mongo as it's not available in Humble)
+# Install ROS dependencies (skip warehouse_ros_mongo as it's not available)
 RUN rosdep update && \
     rosdep install --from-paths src --ignore-src -r -y --skip-keys="warehouse_ros_mongo"
 
 # Build the workspace
-RUN . /opt/ros/humble/setup.sh && \
+RUN . /opt/ros/jazzy/setup.sh && \
     colcon build
 
 USER ${USER}
@@ -114,7 +115,7 @@ depth=24
 EOF
 
 # Make sure ROS env is available in shells launched from XFCE terminal
-RUN echo "source /opt/ros/humble/setup.bash" >> /home/${USER}/.bashrc && \
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/${USER}/.bashrc && \
     echo '[ -f /workspace/install/setup.bash ] && source /workspace/install/setup.bash' >> /home/${USER}/.bashrc
 
 # --- Setup /etc/profile.d/ for login shells (SSH sessions) ---
@@ -122,7 +123,7 @@ USER root
 RUN cat > /etc/profile.d/ros2-setup.sh <<'EOF'
 #!/bin/bash
 # Source ROS 2 base installation
-source /opt/ros/humble/setup.bash
+source /opt/ros/jazzy/setup.bash
 # Source workspace overlay if it exists
 [ -f /workspace/install/setup.bash ] && source /workspace/install/setup.bash
 EOF
