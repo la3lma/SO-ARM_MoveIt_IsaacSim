@@ -68,7 +68,7 @@ def generate_launch_description():
                 '-name', 'so_arm',
                 '-x', '0.0',
                 '-y', '0.0',
-                '-z', '0.2'
+                '-z', '0.0'  # On the ground
             ],
             output='screen'
         )]

@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com)
      Commit Version: 1.6.0-1-g15f4949  Build Version: 1.6.7594.29634
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
   name="so_arm_urdf">
+  <!-- World link - fixed reference frame for simulation -->
+  <link name="world"/>
+
+  <!-- Fixed joint to anchor the robot base to the world -->
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="Base"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
   <link
     name="Base">
     <inertial>
@@ -96,6 +106,7 @@
       link="Rotation_Pitch" />
     <axis
       xyz="0 1 0" />
+    <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
     name="Upper_Arm">
@@ -149,6 +160,7 @@
       link="Upper_Arm" />
     <axis
       xyz="1 0 0" />
+    <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
     name="Lower_Arm">
@@ -202,6 +214,7 @@
       link="Lower_Arm" />
     <axis
       xyz="1 0 0" />
+    <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
     name="Wrist_Pitch_Roll">
@@ -255,6 +268,7 @@
       link="Wrist_Pitch_Roll" />
     <axis
       xyz="1 0 0" />
+    <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
     name="Fixed_Jaw">
@@ -308,6 +322,7 @@
       link="Fixed_Jaw" />
     <axis
       xyz="0 1 0" />
+    <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
     name="Moving_Jaw">
@@ -361,5 +376,6 @@
       link="Moving_Jaw" />
     <axis
       xyz="0 0 1" />
+    <dynamics damping="0.7" friction="0.5"/>
   </joint>
 </robot>
