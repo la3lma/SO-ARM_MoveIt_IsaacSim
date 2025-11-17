@@ -1,47 +1,32 @@
 services:
-  # Main ROS2 application service with MoveIt
+  # Main ROS2 application service with MoveIt + SSH + VNC
   ros2-moveit:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: so-arm-moveit
     hostname: ros2-moveit
-    network_mode: host
+    # Bind to loopback so it isn't exposed on your LAN
+    ports:
+      - "127.0.0.1:6082:6080"   # noVNC web interface
+      - "127.0.0.1:5903:5901"   # VNC
+      - "127.0.0.1:2224:22"     # SSH
     privileged: true
     stdin_open: true
     tty: true
     environment:
-      - DISPLAY=${DISPLAY:-:0}
+      - DISPLAY=:1
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
       - ROS_DISTRO=humble
-      - QT_X11_NO_MITSHM=1
-      - LIBGL_ALWAYS_INDIRECT=0
+      - VNC_GEOMETRY=${VNC_GEOMETRY:-1920x1080}
+      - VNC_DEPTH=${VNC_DEPTH:-24}
+      - TZ=${TZ:-UTC}
     volumes:
       # Mount workspace for development
       - .:/workspace:rw
-      # X11 socket for GUI applications (RViz)
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      # Git config (optional)
-      - ${HOME}/.gitconfig:/home/ros2-humble/.gitconfig:ro
-      # SSH keys (optional)
-      - ${HOME}/.ssh:/home/ros2-humble/.ssh:ro
+      # Optional: persist VNC config/password between rebuilds
+      # - ./vnc:/home/dev/.vnc
     working_dir: /workspace
-    command: >
-      bash -c "
-        if [ ! -d install ]; then
-          echo 'Building ROS2 workspace...';
-          source /opt/ros/humble/setup.bash &&
-          colcon build --symlink-install;
-        fi;
-        source /opt/ros/humble/setup.bash;
-        [ -f install/setup.bash ] && source install/setup.bash;
-        echo 'ROS2 MoveIt environment ready!';
-        echo 'Available launch commands:';
-        echo '  - ros2 launch so_arm_moveit_config demo.launch.py';
-        echo '  - ros2 launch so_arm_moveit_config move_group.launch.py';
-        echo '  - ros2 launch so_arm_moveit_config moveit_rviz.launch.py';
-        exec bash
-      "
 
   # Robot State Publisher service
   robot-state-publisher:
