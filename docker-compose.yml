@@ -1,0 +1,212 @@
+version: '3.9'
+
+services:
+  # Main ROS2 application service with MoveIt
+  ros2-moveit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: so-arm-moveit
+    hostname: ros2-moveit
+    network_mode: host
+    privileged: true
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - ROS_DISTRO=humble
+      - QT_X11_NO_MITSHM=1
+      - LIBGL_ALWAYS_INDIRECT=0
+    volumes:
+      # Mount workspace for development
+      - .:/workspace:rw
+      # X11 socket for GUI applications (RViz)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Git config (optional)
+      - ${HOME}/.gitconfig:/home/ros2-humble/.gitconfig:ro
+      # SSH keys (optional)
+      - ${HOME}/.ssh:/home/ros2-humble/.ssh:ro
+    working_dir: /workspace
+    command: >
+      bash -c "
+        if [ ! -d install ]; then
+          echo 'Building ROS2 workspace...';
+          source /opt/ros/humble/setup.bash &&
+          colcon build --symlink-install;
+        fi;
+        source /opt/ros/humble/setup.bash;
+        [ -f install/setup.bash ] && source install/setup.bash;
+        echo 'ROS2 MoveIt environment ready!';
+        echo 'Available launch commands:';
+        echo '  - ros2 launch so_arm_moveit_config demo.launch.py';
+        echo '  - ros2 launch so_arm_moveit_config move_group.launch.py';
+        echo '  - ros2 launch so_arm_moveit_config moveit_rviz.launch.py';
+        exec bash
+      "
+
+  # Robot State Publisher service
+  robot-state-publisher:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: so-arm-rsp
+    network_mode: host
+    depends_on:
+      - ros2-moveit
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - ROS_DISTRO=humble
+    volumes:
+      - .:/workspace:rw
+    working_dir: /workspace
+    command: >
+      bash -c "
+        source /opt/ros/humble/setup.bash;
+        [ -f install/setup.bash ] && source install/setup.bash;
+        ros2 launch so_arm_moveit_config rsp.launch.py
+      "
+    restart: unless-stopped
+    profiles:
+      - full
+
+  # MoveIt Move Group service
+  move-group:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: so-arm-move-group
+    network_mode: host
+    depends_on:
+      - robot-state-publisher
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - ROS_DISTRO=humble
+    volumes:
+      - .:/workspace:rw
+    working_dir: /workspace
+    command: >
+      bash -c "
+        source /opt/ros/humble/setup.bash;
+        [ -f install/setup.bash ] && source install/setup.bash;
+        ros2 launch so_arm_moveit_config move_group.launch.py
+      "
+    restart: unless-stopped
+    profiles:
+      - full
+
+  # RViz visualization service
+  rviz:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: so-arm-rviz
+    network_mode: host
+    depends_on:
+      - move-group
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - ROS_DISTRO=humble
+      - QT_X11_NO_MITSHM=1
+      - LIBGL_ALWAYS_INDIRECT=0
+    volumes:
+      - .:/workspace:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    working_dir: /workspace
+    command: >
+      bash -c "
+        source /opt/ros/humble/setup.bash;
+        [ -f install/setup.bash ] && source install/setup.bash;
+        ros2 launch so_arm_moveit_config moveit_rviz.launch.py
+      "
+    restart: unless-stopped
+    profiles:
+      - full
+      - viz
+
+  # MongoDB for motion planning storage (optional)
+  mongodb:
+    image: mongo:6.0
+    container_name: so-arm-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
+    restart: unless-stopped
+    profiles:
+      - full
+      - database
+
+  # Warehouse database service (connects ROS2 to MongoDB)
+  warehouse:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: so-arm-warehouse
+    network_mode: host
+    depends_on:
+      - mongodb
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - ROS_DISTRO=humble
+    volumes:
+      - .:/workspace:rw
+    working_dir: /workspace
+    command: >
+      bash -c "
+        source /opt/ros/humble/setup.bash;
+        [ -f install/setup.bash ] && source install/setup.bash;
+        ros2 launch so_arm_moveit_config warehouse_db.launch.py
+      "
+    restart: unless-stopped
+    profiles:
+      - full
+      - database
+
+  # Development container with GPU support (for Isaac Sim integration)
+  ros2-dev-gpu:
+    build:
+      context: .
+      dockerfile: docker/ros2_humble/Dockerfile
+      target: full
+    container_name: so-arm-dev-gpu
+    network_mode: host
+    privileged: true
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - ROS_DISTRO=humble
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - .:/workspace:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/.gitconfig:/home/ros2-humble/.gitconfig:ro
+      - ${HOME}/.ssh:/home/ros2-humble/.ssh:ro
+    working_dir: /workspace
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: bash
+    profiles:
+      - gpu
+      - dev
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge
