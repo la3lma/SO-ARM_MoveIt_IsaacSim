@@ -82,12 +82,26 @@ def generate_launch_description():
         output='screen'
     )
 
-    # Joint State Publisher GUI for manual control
-    joint_state_publisher_gui = Node(
-        package='joint_state_publisher_gui',
-        executable='joint_state_publisher_gui',
-        output='screen',
-        parameters=[{'use_sim_time': True}]
+    # Load and start controllers
+    controller_config = os.path.join(pkg_so_arm, 'config', 'ros2_controllers.yaml')
+
+    # Controller spawner for joint_state_broadcaster
+    spawn_joint_state_broadcaster = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['joint_state_broadcaster', '--controller-manager', '/controller_manager'],
+        output='screen'
+    )
+
+    # Controller spawner for arm_controller (delayed to let joint_state_broadcaster start first)
+    spawn_arm_controller = TimerAction(
+        period=2.0,
+        actions=[Node(
+            package='controller_manager',
+            executable='spawner',
+            arguments=['arm_controller', '--controller-manager', '/controller_manager'],
+            output='screen'
+        )]
     )
 
     return LaunchDescription([
@@ -95,5 +109,6 @@ def generate_launch_description():
         robot_state_publisher,
         spawn_entity,
         bridge_clock,
-        joint_state_publisher_gui,
+        spawn_joint_state_broadcaster,
+        spawn_arm_controller,
     ])
