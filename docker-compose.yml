@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   # Main ROS2 application service with MoveIt
   ros2-moveit:
