@@ -35,16 +35,7 @@ cd /workspace
 ./launch_and_log.sh
 ```
 
-### Set Simulation Time Parameters
-
-After launch completes (~20 seconds), in a **new terminal**:
-
-```bash
-docker exec -it so-arm-moveit bash
-source /opt/ros/jazzy/setup.bash
-source /workspace/install/setup.bash
-bash /workspace/src/so_arm_moveit_config/scripts/fix_use_sim_time.sh
-```
+**Wait ~20 seconds** for all components to initialize (including automatic clock sync fix).
 
 ### Plan and Execute Motion
 
@@ -66,20 +57,21 @@ All output is automatically logged to `/workspace/logs/gazebo_moveit_TIMESTAMP.l
 
 ### Robot doesn't move
 
-1. Check `use_sim_time` parameters are `true`:
+1. Ensure you waited ~20 seconds for all systems to initialize
+2. Check `use_sim_time` parameters are `true`:
    ```bash
    ros2 param get /move_group use_sim_time
    ros2 param get /controller_manager use_sim_time
    ```
 
-2. Run fix script if needed:
-   ```bash
-   bash /workspace/src/so_arm_moveit_config/scripts/fix_use_sim_time.sh
-   ```
-
 3. Verify controllers are active:
    ```bash
    ros2 control list_controllers
+   ```
+
+4. Check logs for errors:
+   ```bash
+   tail -50 /workspace/logs/gazebo_moveit_*.log
    ```
 
 See [SETUP_GUIDE.md](SETUP_GUIDE.md#troubleshooting) for detailed troubleshooting.

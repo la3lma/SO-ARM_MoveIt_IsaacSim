@@ -99,6 +99,7 @@ ros2 pkg list | grep so_arm
 The launch script automatically:
 - Sources ROS environment
 - Launches Gazebo + MoveIt + RViz
+- Applies clock synchronization fix automatically
 - Logs all output to timestamped file
 
 ```bash
@@ -109,6 +110,7 @@ cd /workspace
 **Wait for initialization** (~20 seconds). You should see:
 1. Gazebo window with robot loaded
 2. RViz window with MoveIt interface
+3. Automatic clock sync fix message: "✓ use_sim_time parameters applied successfully"
 
 ### Method 2: Manual Launch
 
@@ -118,26 +120,7 @@ source /workspace/install/setup.bash
 ros2 launch so_arm_moveit_config gazebo_moveit.launch.py
 ```
 
-### Apply Runtime Fixes
-
-After launch completes, in a **NEW terminal**:
-
-```bash
-docker exec -it so-arm-moveit bash
-source /opt/ros/jazzy/setup.bash
-source /workspace/install/setup.bash
-bash /workspace/src/so_arm_moveit_config/scripts/fix_use_sim_time.sh
-```
-
-**Output should show**:
-```
-Waiting for nodes to start...
-Setting use_sim_time=true for all nodes...
-Set parameter successful
-...
-move_group: Boolean value is: True
-controller_manager: Boolean value is: True
-```
+The launch system automatically applies the `use_sim_time` parameter fix at 18 seconds after launch, eliminating the need for manual intervention
 
 ## Verification
 
@@ -275,17 +258,19 @@ ros2 control set_controller_state arm_controller start
 
 ### use_sim_time Still False
 
-**Issue**: Parameter not propagating
+**Issue**: Parameter not propagating or automatic fix didn't run
 
 **Solution**:
-```bash
-# Set parameters manually
-ros2 param set /move_group use_sim_time true
-ros2 param set /controller_manager use_sim_time true
-ros2 param set /arm_controller use_sim_time true
-ros2 param set /joint_state_broadcaster use_sim_time true
-ros2 param set /robot_state_publisher use_sim_time true
-```
+1. Ensure you waited at least 20 seconds after launch
+2. Look for "✓ use_sim_time parameters applied successfully" in logs
+3. If automatic fix didn't run, manually set parameters:
+   ```bash
+   ros2 param set /move_group use_sim_time true
+   ros2 param set /controller_manager use_sim_time true
+   ros2 param set /arm_controller use_sim_time true
+   ros2 param set /joint_state_broadcaster use_sim_time true
+   ros2 param set /robot_state_publisher use_sim_time true
+   ```
 
 ### Motion Executes in RViz but Not Gazebo
 

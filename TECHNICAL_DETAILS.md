@@ -76,14 +76,25 @@ arm_controller:
     use_sim_time: true  # Controller uses sim time
 ```
 
-**Runtime Fix**: `fix_use_sim_time.sh`
+**Automatic Runtime Fix**: Integrated in `gazebo_moveit.launch.py`
 
 Why needed: MoveIt's `generate_move_group_launch()` function doesn't properly propagate `use_sim_time` parameter in ROS2 Jazzy. This is a known limitation.
 
-Solution: Set parameter after node startup:
-```bash
-ros2 param set /move_group use_sim_time true
+Solution: Launch file includes a `TimerAction` at 18 seconds that automatically sets parameters:
+```python
+fix_use_sim_time = TimerAction(
+    period=18.0,
+    actions=[ExecuteProcess(
+        cmd=['bash', '-c',
+             'ros2 param set /move_group use_sim_time true && '
+             'ros2 param set /controller_manager use_sim_time true && '
+             # ... (all nodes)
+        ]
+    )]
+)
 ```
+
+This eliminates the need for manual intervention after launch.
 
 ### Clock Flow
 
@@ -272,9 +283,13 @@ gazebo_moveit.launch.py
     │     ├─► Start move_group node
     │     └─► Connect to controllers
     │
-    └─► [t=15s] RViz (moveit_rviz.launch.py)
+    ├─► [t=15s] RViz (moveit_rviz.launch.py)
+    │     │
+    │     └─► Load MoveIt plugin
+    │
+    └─► [t=18s] Automatic use_sim_time Fix
           │
-          └─► Load MoveIt plugin
+          └─► Set use_sim_time=true for all nodes
 ```
 
 ### Why Delays?
@@ -292,6 +307,11 @@ gazebo_moveit.launch.py
   - Build kinematic model
   - Start action servers
   - Connect to controllers
+
+**18 second delay for automatic fix**:
+- Ensures move_group is fully initialized before setting parameters
+- Buffer time after move_group start (12s + 6s)
+- Prevents "Node not found" errors
 
 Without delays: Race conditions cause initialization failures.
 
@@ -347,9 +367,9 @@ MoveIt                Controller
 
 **Root Cause**: MoveIt launch utilities in ROS2 Jazzy have limited parameter propagation.
 
-**Workaround**: Runtime parameter setting via `fix_use_sim_time.sh`
+**Solution**: Automatic runtime parameter setting integrated in `gazebo_moveit.launch.py` via `TimerAction` at 18 seconds.
 
-**Future**: Fixed in future MoveIt releases or custom launch file.
+**Status**: ✅ Resolved - No manual intervention required.
 
 ### Issue 2: Transform Warning in RViz
 
