@@ -106,6 +106,7 @@
       link="Rotation_Pitch" />
     <axis
       xyz="0 1 0" />
+    <limit velocity="1.5" effort="10"/>
     <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
@@ -160,6 +161,7 @@
       link="Upper_Arm" />
     <axis
       xyz="1 0 0" />
+    <limit velocity="1.5" effort="8"/>
     <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
@@ -214,6 +216,7 @@
       link="Lower_Arm" />
     <axis
       xyz="1 0 0" />
+    <limit velocity="2.0" effort="5"/>
     <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
@@ -268,6 +271,7 @@
       link="Wrist_Pitch_Roll" />
     <axis
       xyz="1 0 0" />
+    <limit velocity="2.0" effort="3"/>
     <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
@@ -322,6 +326,7 @@
       link="Fixed_Jaw" />
     <axis
       xyz="0 1 0" />
+    <limit velocity="2.0" effort="3"/>
     <dynamics damping="0.7" friction="0.5"/>
   </joint>
   <link
@@ -376,6 +381,7 @@
       link="Moving_Jaw" />
     <axis
       xyz="0 0 1" />
+    <limit velocity="1.0" effort="2"/>
     <dynamics damping="0.7" friction="0.5"/>
   </joint>
 
