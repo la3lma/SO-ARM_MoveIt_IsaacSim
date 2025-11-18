@@ -1,185 +1,89 @@
-# SO-ARM MoveIt IsaacSim
+# SO-ARM MoveIt + Gazebo Integration
 
-A ROS 2 Humble workspace for the SO-ARM robot with MoveIt motion planning integration for Isaac Sim.
+Complete ROS2 Jazzy + MoveIt + Gazebo Harmonic integration for the SO-ARM robotic arm.
 
-## Overview
+## Status
 
-This project provides MoveIt configuration and URDF description for the SO-ARM robot, designed to work with NVIDIA Isaac Sim for robotics simulation and motion planning.
+✅ **Working** - Robot motion planning and execution in both RViz and Gazebo Harmonic
 
 ## Features
 
-- **ROS 2 Humble** compatibility
-- **MoveIt 2** motion planning configuration
-- **Docker** containerization for easy deployment
-- **Isaac Sim** integration ready
-- Complete URDF robot description
-- Pre-configured launch files
-
-## Project Structure
-
-```
-so-arm_moveit_isaacsim/
-├── src/
-│   ├── so_arm_description/         # URDF/Xacro, meshes, RViz
-│   ├── so_arm_moveit_config/       # MoveIt setup assistant output
-│   ├── so_arm_bringup/            # Launch files (ROS 2 Control + MoveIt)
-│   ├── so_arm_controllers/        # YAML controllers + controller manager node
-│   └── so_arm_hardware_interface/ # Custom hardware interface (optional)
-
-├── Dockerfile                    # Full Docker setup
-├── Dockerfile.minimal           # Minimal Docker setup
-├── build.log                    # Build logs
-├── deps.txt                     # Dependencies list
-└── find_deps.sh                 # Dependency finder script
-```
+- **ROS2 Jazzy** with latest improvements
+- **MoveIt2** motion planning with OMPL
+- **Gazebo Harmonic** physics simulation
+- **ros2_control** hardware abstraction
+- Full 6-DOF arm control (including gripper jaw)
+- Synchronized simulation time across all nodes
+- Automated logging for debugging
 
 ## Quick Start
 
-### Option 1: Docker (Recommended)
+### Prerequisites
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/MuammerBay/SO-ARM_MoveIt_IsaacSim.git
-   cd SO-ARM_MoveIt_IsaacSim
-   ```
+- Docker and Docker Compose installed
+- X11 forwarding configured (for GUI)
 
-2. **Build the Docker image:**
-   ```bash
-   docker build -f Dockerfile.minimal -t so-arm-minimal .
-   ```
-
-3. **Run the container:**
-   ```bash
-   docker run -it --rm so-arm-minimal bash
-   ```
-
-4. **Inside the container, test the packages:**
-   ```bash
-   source /opt/ros/humble/setup.sh
-   source install/setup.sh
-   ros2 pkg list | grep so_arm
-   ```
-
-### Option 2: Local Build
-
-1. **Prerequisites:**
-   - ROS 2 Humble installed
-   - MoveIt 2 packages
-   - colcon build tools
-
-2. **Clone and build:**
-   ```bash
-   git clone https://github.com/MuammerBay/SO-ARM_MoveIt_IsaacSim.git
-   cd SO-ARM_MoveIt_IsaacSim
-   colcon build
-   source install/setup.bash
-   ```
-
-## Usage
-
-### Launch MoveIt Demo
+### Launch
 
 ```bash
-# Source the workspace
-source install/setup.bash
+# Build and start container
+make up
 
-# Launch MoveIt demo (when available)
-ros2 launch so_arm_moveit_config demo.launch.py
+# In container, launch Gazebo + MoveIt + RViz
+docker exec -it so-arm-moveit bash
+cd /workspace
+./launch_and_log.sh
 ```
 
-### Available Packages
+### Set Simulation Time Parameters
 
-- **so_arm_description**: Robot description package with URDF/Xacro files, meshes, and RViz configurations
-- **so_arm_moveit_config**: MoveIt configuration with planning scenes, controllers, and launch files
-- **so_arm_bringup**: Launch files for ROS 2 Control and MoveIt integration
-- **so_arm_controllers**: Controller configurations and optional controller manager node
-- **so_arm_hardware_interface**: Custom hardware interface implementation (optional)
-- **so_arm_moveit_plugin**: Custom MoveIt plugins and extensions
-
-## Docker Images
-
-### Minimal Image (`Dockerfile.minimal`)
-- Based on `ros:humble-ros-base`
-- Includes core MoveIt packages
-- Optimized for CI/CD and basic testing
-- ~2GB compressed
-
-### Full Image (`Dockerfile`)
-- Includes additional development tools
-- GUI support for RViz
-- Complete development environment
-
-## Development
-
-### Building Locally
+After launch completes (~20 seconds), in a **new terminal**:
 
 ```bash
-# Clean previous builds (if folder was renamed)
-rm -rf build/ install/ log/
-
-# Build the workspace
-colcon build
-
-# Source the workspace
-source install/setup.bash
+docker exec -it so-arm-moveit bash
+source /opt/ros/jazzy/setup.bash
+source /workspace/install/setup.bash
+bash /workspace/src/so_arm_moveit_config/scripts/fix_use_sim_time.sh
 ```
 
-### Adding New Packages
+### Plan and Execute Motion
 
-1. Add your package to the `src/` directory
-2. Update dependencies in `package.xml`
-3. Rebuild: `colcon build`
+1. In RViz, use the MotionPlanning plugin
+2. Drag the interactive marker to set a goal pose
+3. Click "Plan & Execute"
+4. **Robot will move in both RViz and Gazebo!**
 
-## Troubleshooting
+## Documentation
 
-### Folder Name Change Issues
+- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Detailed setup and verification steps
+- **[TECHNICAL_DETAILS.md](TECHNICAL_DETAILS.md)** - Architecture and implementation details
 
-If you renamed the workspace folder, clean the build artifacts:
+## Logs
 
-```bash
-rm -rf build/ install/ log/
-colcon build
-```
+All output is automatically logged to `/workspace/logs/gazebo_moveit_TIMESTAMP.log`
 
-### Docker Build Issues
+## Quick Troubleshooting
 
-If Docker build fails due to missing packages:
+### Robot doesn't move
 
-```bash
-# Use the minimal Dockerfile which skips problematic dependencies
-docker build -f Dockerfile.minimal -t so-arm-minimal .
-```
+1. Check `use_sim_time` parameters are `true`:
+   ```bash
+   ros2 param get /move_group use_sim_time
+   ros2 param get /controller_manager use_sim_time
+   ```
 
-### Missing Dependencies
+2. Run fix script if needed:
+   ```bash
+   bash /workspace/src/so_arm_moveit_config/scripts/fix_use_sim_time.sh
+   ```
 
-Check available packages:
+3. Verify controllers are active:
+   ```bash
+   ros2 control list_controllers
+   ```
 
-```bash
-# List ROS packages
-apt list | grep ros-humble-
+See [SETUP_GUIDE.md](SETUP_GUIDE.md#troubleshooting) for detailed troubleshooting.
 
-# Check rosdep dependencies
-rosdep install --from-paths src --ignore-src -r -y --simulate
-```
+## Credits
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Commit changes: `git commit -am 'Add feature'`
-4. Push to branch: `git push origin feature-name`
-5. Submit a Pull Request
-
-## License
-
-This project is licensed under the BSD License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Built with ROS 2 Humble and MoveIt 2
-- Designed for NVIDIA Isaac Sim integration
-- Based on standard ROS robotics practices
-
-## Contact
-
-For questions and support, please open an issue on GitHub. 
+SO-ARM design with ROS2 Jazzy + MoveIt2 + Gazebo Harmonic integration.
